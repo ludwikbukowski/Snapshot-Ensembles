@@ -6,6 +6,7 @@ from keras.layers import Input, merge, Activation, Dropout, Flatten, Dense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, AveragePooling2D
 from keras.layers.normalization import BatchNormalization
 from keras import backend as K
+from keras.layers.core import Lambda
 
 
 def initial_conv(input):
@@ -16,6 +17,10 @@ def initial_conv(input):
     x = BatchNormalization(axis=channel_axis)(x)
     x = Activation('relu')(x)
     return x
+
+def custom_sum(X):
+    x1, x2 = X
+    return x1 + x2
 
 def conv1_block(input, k=1, dropout=0.0):
     init = input
@@ -40,7 +45,9 @@ def conv1_block(input, k=1, dropout=0.0):
     x = BatchNormalization(axis=channel_axis)(x)
     x = Activation('relu')(x)
 
-    m = merge([init, x], mode='sum')
+    # x = keras.layers.Concatenate(axis=-1)(x)
+    # m = merge([init, x], mode='sum')
+    m =  Lambda(custom_sum)([init, x])
     return m
 
 def conv2_block(input, k=1, dropout=0.0):
@@ -66,7 +73,8 @@ def conv2_block(input, k=1, dropout=0.0):
     x = BatchNormalization(axis=channel_axis)(x)
     x = Activation('relu')(x)
 
-    m = merge([init, x], mode='sum')
+    # m = merge([init, x], mode='sum')
+    m = Lambda(custom_sum)([init, x])
     return m
 
 def conv3_block(input, k=1, dropout=0.0):
@@ -91,8 +99,8 @@ def conv3_block(input, k=1, dropout=0.0):
     x = Convolution2D(64 * k, 3, 3, border_mode='same')(x)
     x = BatchNormalization(axis=channel_axis)(x)
     x = Activation('relu')(x)
-
-    m = merge([init, x], mode='sum')
+    # m = merge([init, x], mode='sum')
+    m = Lambda(custom_sum)([init, x])
     return m
 
 def create_wide_residual_network(input_dim, nb_classes=100, N=2, k=1, dropout=0.0, verbose=1):

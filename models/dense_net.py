@@ -9,6 +9,7 @@ from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import AveragePooling2D
 from keras.layers.pooling import GlobalAveragePooling2D
 from keras.layers import Input, merge
+from keras.layers.merge import concatenate
 from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 import keras.backend as K
@@ -88,7 +89,8 @@ def dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_
     for i in range(nb_layers):
         x = conv_block(x, growth_rate, dropout_rate, weight_decay)
         feature_list.append(x)
-        x = merge(feature_list, mode='concat', concat_axis=concat_axis)
+        # x = merge(feature_list, mode='concat', concat_axis=concat_axis)
+        x = concatenate(feature_list)
         nb_filter += growth_rate
 
     return x, nb_filter
